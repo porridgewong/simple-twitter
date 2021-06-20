@@ -10,3 +10,11 @@ A simple Twitter backend using Django.
 3. Install and update pip
 4. Add Django
 5. Create a database named *twitter*.
+
+## Development
+### Accounts APIs
+1. APIs
+* login_status
+* login
+* signup
+2. Tests
