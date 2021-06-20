@@ -18,3 +18,6 @@ A simple Twitter backend using Django.
 * login
 * signup
 2. Tests
+
+### Tweets APIs
+1. Create a Tweet model (user, content, created_At)
