@@ -20,4 +20,7 @@ A simple Twitter backend using Django.
 2. Tests
 
 ### Tweets APIs
-1. Create a Tweet model (user, content, created_At)
+1. Create a Tweet model (user, content, created_at), index on user+created_at
+2. APIs
+* list(GET)
+* create(POST)
