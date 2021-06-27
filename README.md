@@ -24,3 +24,9 @@ A simple Twitter backend using Django.
 2. APIs
 * list(GET)
 * create(POST)
+
+### Friendships APIs
+1. Create a Friendship model (from_user, to_user, created_at) index on from_user+created_at, to_user+created_at.
+2. APIs
+* followers/followings(GET)
+* follow/unfollow(POST)
