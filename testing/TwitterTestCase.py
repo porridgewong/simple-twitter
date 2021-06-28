@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from tweets.models import Tweet
+from rest_framework.test import APIClient
 
 
 class TwitterTestCase(TestCase):
@@ -18,3 +19,10 @@ class TwitterTestCase(TestCase):
             content = 'this is a test tweet.'
 
         return Tweet.objects.create(user=user, content=content)
+
+    @property
+    def anonymous_client(self):
+        if hasattr(self, '_anonymous_client'):
+            return self._anonymous_client
+        self._anonymous_client = APIClient()
+        return self._anonymous_client
