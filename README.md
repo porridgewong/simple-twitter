@@ -30,3 +30,9 @@ A simple Twitter backend using Django.
 2. APIs
 * followers/followings(GET)
 * follow/unfollow(POST)
+
+### Newsfeeds APIs
+1. Create a Newsfeed model (user, tweet, created_at) index on user+created_at
+2. APIs
+* newsfeeds(GET)
+3. Add fanout logic in tweets creation API
