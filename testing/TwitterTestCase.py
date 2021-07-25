@@ -1,7 +1,8 @@
-from django.test import TestCase
+from comments.models import Comment
 from django.contrib.auth.models import User
-from tweets.models import Tweet
+from django.test import TestCase
 from rest_framework.test import APIClient
+from tweets.models import Tweet
 
 
 class TwitterTestCase(TestCase):
@@ -19,6 +20,12 @@ class TwitterTestCase(TestCase):
             content = 'this is a test tweet.'
 
         return Tweet.objects.create(user=user, content=content)
+
+    def create_comment(self, user, tweet, content=None):
+        if content is None:
+            content = 'this is a test comment.'
+
+        return Comment.objects.create(user=user, tweet=tweet, content=content)
 
     @property
     def anonymous_client(self):
