@@ -1,5 +1,7 @@
-from testing.TwitterTestCase import TwitterTestCase
+from comments.models import Comment
+from django.utils import timezone
 from rest_framework.test import APIClient
+from testing.TwitterTestCase import TwitterTestCase
 
 
 COMMENT_URL = '/api/comments/'
@@ -51,3 +53,55 @@ class CommentApiTests(TwitterTestCase):
         self.assertEqual(response.data['user']['id'], self.linghu.id)
         self.assertEqual(response.data['tweet_id'], self.tweet.id)
         self.assertEqual(response.data['content'], '1')
+
+    def test_destroy(self):
+        comment = self.create_comment(self.linghu, self.tweet)
+        url = '{}{}/'.format(COMMENT_URL, comment.id)
+
+        # case 1: anonymous client doesn't have permission to delete
+        response = self.anonymous_client.delete(url)
+        self.assertEqual(response.status_code, 403)
+
+        # case 2: non-owner is not allowed to delete
+        response = self.dongxie_client.delete(url)
+        self.assertEqual(response.status_code, 403)
+
+        # case 3: valid case
+        count = Comment.objects.count()
+        response = self.linghu_client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Comment.objects.count(), count - 1)
+
+    def test_update(self):
+        comment = self.create_comment(self.linghu, self.tweet, 'original')
+        another_tweet = self.create_tweet(self.dongxie)
+        url = '{}{}/'.format(COMMENT_URL, comment.id)
+
+        # case 1: anonymous client doesn't have permission to delete
+        response = self.anonymous_client.put(url, {'content': 'new'})
+        self.assertEqual(response.status_code, 403)
+
+        # case 2: non-owner is not allowed to delete
+        response = self.dongxie_client.put(url, {'content': 'new'})
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertNotEqual(comment.content, 'new')
+
+        # case 3: only content can be updated
+        before_updated_at = comment.updated_at
+        before_created_at = comment.created_at
+        now = timezone.now()
+        response = self.linghu_client.put(url, {
+            'content': 'new',
+            'user_id': self.dongxie.id,
+            'tweet_id': another_tweet.id,
+            'created_at': now,
+        })
+        self.assertEqual(response.status_code, 200)
+        comment.refresh_from_db()
+        self.assertEqual(comment.content, 'new')
+        self.assertEqual(comment.user, self.linghu)
+        self.assertEqual(comment.tweet, self.tweet)
+        self.assertEqual(comment.created_at, before_created_at)
+        self.assertNotEqual(comment.created_at, now)
+        self.assertNotEqual(comment.updated_at, before_updated_at)
