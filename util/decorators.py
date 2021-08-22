@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 
-def required_params(request_attr='query_params', params=None):
+def required_params(method='GET', params=None):
     """
     A decorator that validate all the query parameters exist, otherwise return a 400 response.
     :param request_attr: from request.query_param (GET) or request.data (POST)
@@ -16,7 +16,10 @@ def required_params(request_attr='query_params', params=None):
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(instance, request, *args, **kwargs):
-            data = getattr(request, request_attr)
+            if method.lower() == 'get':
+                data = request.query_params
+            else:
+                data = request.data
             missing_params = [param for param in params if param not in data]
             if missing_params:
                 params_str = ','.join(missing_params)

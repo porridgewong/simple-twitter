@@ -3,15 +3,16 @@ from comments.api.serializers import (
     CommentSerializerForCreate,
     CommentSerializerForUpdate,
 )
-from comments.models import Comment
 from comments.api.permissions import IsObjectOwner
+from comments.models import Comment
+from inbox.services import NotificationService
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.permissions import (
-    IsAuthenticated,
     AllowAny,
+    IsAuthenticated,
 )
 from rest_framework.response import Response
-from rest_framework import status
 
 
 class CommentViewSet(viewsets.GenericViewSet):
@@ -55,6 +56,7 @@ class CommentViewSet(viewsets.GenericViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         comment = serializer.save()
+        NotificationService.send_comment_notification(comment)
 
         return Response(
                 CommentSerializer(comment, context={'request': request}).data,
