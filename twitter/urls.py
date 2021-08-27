@@ -18,6 +18,7 @@ from comments.api import views as comment_views
 from django.contrib import admin
 from django.urls import include, path
 from friendships.api import views as friendship_views
+from inbox.api import views as notification_views
 from likes.api import views as like_views
 from newsfeeds.api import views as newsfeed_views
 from rest_framework import routers
@@ -32,6 +33,7 @@ router.register(r'api/friendships', friendship_views.FriendshipViewSet, basename
 router.register(r'api/newsfeeds', newsfeed_views.NewsfeedViewSet, basename='newsfeeds')
 router.register(r'api/comments', comment_views.CommentViewSet, basename='comments')
 router.register(r'api/likes', like_views.LikeViewSet, basename='likes')
+router.register(r'api/notifications', notification_views.NotificationViewSet, basename='notifications')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
