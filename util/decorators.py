@@ -6,7 +6,7 @@ from rest_framework.response import Response
 def required_params(method='GET', params=None):
     """
     A decorator that validate all the query parameters exist, otherwise return a 400 response.
-    :param request_attr: from request.query_param (GET) or request.data (POST)
+    :param method: from GET or POST
     :param params: params list
     """
 
