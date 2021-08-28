@@ -1,12 +1,20 @@
-from accounts.api.serializers import UserSerializer, LoginSerializer, SignupSerializer
+from accounts.api.serializers import (
+    LoginSerializer,
+    SignupSerializer,
+    UserProfileSerializerForUpdate,
+    UserSerializer,
+    UserSerializerWithProfile,
+)
+from accounts.models import UserProfile
+from util.permissions import IsObjectOwner
 from django.contrib.auth import(
     logout as django_logout,
     login as django_login,
     authenticate as django_authenticate,
 )
 from django.contrib.auth.models import User
-from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -16,8 +24,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     API endpoint that allows users to be viewed or edited.
     """
     queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserSerializerWithProfile
+    permission_classes = [permissions.IsAdminUser]
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -99,3 +107,13 @@ class AccountViewSet(viewsets.ViewSet):
                 'user': UserSerializer(instance=user).data
             },
             status=201)
+
+
+class UserProfileViewSet(
+    viewsets.GenericViewSet,
+    viewsets.mixins.UpdateModelMixin,
+):
+    permission_classes = (permissions.IsAuthenticated, IsObjectOwner,)
+    queryset = UserProfile
+    serializer_class = UserProfileSerializerForUpdate
+

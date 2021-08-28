@@ -3,7 +3,7 @@ from comments.api.serializers import (
     CommentSerializerForCreate,
     CommentSerializerForUpdate,
 )
-from comments.api.permissions import IsObjectOwner
+from util.permissions import IsObjectOwner
 from comments.models import Comment
 from inbox.services import NotificationService
 from rest_framework import status

@@ -1,6 +1,8 @@
 .idea
 *.deb
+*.jpg
 .vagrant
+media/
 
 local_settings.py
 
