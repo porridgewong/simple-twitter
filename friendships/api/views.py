@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from friendships.models import Friendship
+from friendships.api.paginations import FriendshipPagination
 from friendships.api.serializers import (
     FollowersSerializer,
     FollowingsSerializer,
@@ -19,18 +20,21 @@ from rest_framework.exceptions import ValidationError
 class FriendshipViewSet(viewsets.GenericViewSet):
     serializer_class = FriendshipSerializerForCreate
     queryset = User.objects.all()
+    pagination_class = FriendshipPagination
 
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def followers(self, request, pk):
         friendships = Friendship.objects.filter(to_user_id=pk).order_by('-created_at')
-        serializer = FollowersSerializer(friendships, many=True)
-        return Response({'followers': serializer.data}, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(friendships)
+        serializer = FollowersSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def followings(self, request, pk):
         friendships = Friendship.objects.filter(from_user_id=pk).order_by('-created_at')
-        serializer = FollowingsSerializer(friendships, many=True)
-        return Response({'followings': serializer.data}, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(friendships)
+        serializer = FollowingsSerializer(page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def follow(self, request, pk):
