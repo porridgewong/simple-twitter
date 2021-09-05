@@ -5,12 +5,14 @@ from rest_framework.response import Response
 from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate, TweetSerializerForDetail
 from tweets.models import Tweet
 from util.decorators import required_params
+from util.paginations import EndlessPagination
 
 
 class TweetViewSet(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin,
                    viewsets.mixins.ListModelMixin):
     serializer_class = TweetSerializerForCreate
+    pagination_class = EndlessPagination
     queryset = Tweet.objects.all()
 
     def get_permissions(self):
@@ -27,11 +29,12 @@ class TweetViewSet(viewsets.GenericViewSet,
         tweets = Tweet.objects.filter(
             user_id=request.query_params['user_id']
         ).order_by('-created_at')
+        tweets = self.paginate_queryset(tweets)
         serializer = TweetSerializer(
             tweets,
             context={'request': request},
             many=True,)
-        return Response({'tweets': serializer.data})
+        return self.get_paginated_response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = TweetSerializerForCreate(data=request.data, context={'request': request})
