@@ -188,8 +188,8 @@ class LikeApiTests(TwitterTestCase):
         self.create_newsfeed(self.user2, tweet)
         response = self.user2_client.get(NEWSFEED_LIST_API)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['newsfeeds'][0]['tweet']['has_liked'], True)
-        self.assertEqual(response.data['newsfeeds'][0]['tweet']['likes_count'], 2)
+        self.assertEqual(response.data['results'][0]['tweet']['has_liked'], True)
+        self.assertEqual(response.data['results'][0]['tweet']['likes_count'], 2)
 
         # case 4: test likes details
         url = TWEET_DETAIL_API.format(tweet.id)
