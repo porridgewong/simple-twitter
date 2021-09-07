@@ -1,9 +1,9 @@
-from accounts.services import UserService
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from likes.models import Like
 from tweets.models import Tweet
+from util.memcached_helper import MemcachedHelper
 
 
 class Comment(models.Model):
@@ -24,7 +24,7 @@ class Comment(models.Model):
 
     @property
     def cached_user(self):
-        return UserService.get_user_in_cache(self.user_id)
+        return MemcachedHelper.get_object_from_cache(User, self.user_id)
 
     def __str__(self):
         return '{} - {} says {} at tweet {}'.format(

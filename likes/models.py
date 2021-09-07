@@ -1,8 +1,8 @@
-from accounts.services import UserService
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from util.memcached_helper import MemcachedHelper
 
 
 class Like(models.Model):
@@ -21,7 +21,7 @@ class Like(models.Model):
 
     @property
     def cached_user(self):
-        return UserService.get_user_in_cache(self.user_id)
+        return MemcachedHelper.get_object_from_cache(User, self.user_id)
 
     def __str__(self):
         return u'{} - {} liked {} {}'.format(
