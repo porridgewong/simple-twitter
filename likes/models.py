@@ -1,3 +1,4 @@
+from accounts.services import UserService
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -17,6 +18,10 @@ class Like(models.Model):
             ('content_type', 'object_id', 'created_at'),
             ('user', 'content_type', 'created_at'),
         )
+
+    @property
+    def cached_user(self):
+        return UserService.get_user_in_cache(self.user_id)
 
     def __str__(self):
         return u'{} - {} liked {} {}'.format(

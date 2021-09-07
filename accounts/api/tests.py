@@ -1,7 +1,6 @@
 from accounts.models import UserProfile
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
 from rest_framework.test import APIClient
 from testing.TwitterTestCase import TwitterTestCase
 
@@ -13,8 +12,9 @@ LOGIN_STATUS_ENDPOINT = '/api/accounts/login_status/'
 USER_PROFILE_DETAIL_URL = '/api/profiles/{}/'
 
 
-class AccountsApiTest(TestCase):
+class AccountsApiTest(TwitterTestCase):
     def setUp(self):
+        self.clear_cache()
         self.client = APIClient()
         self.user = self.createUser(
             username='testuser',

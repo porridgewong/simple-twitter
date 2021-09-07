@@ -8,4 +8,4 @@ class NewsfeedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Newsfeed
-        fields = ('id', 'user', 'tweet', 'created_at')
+        fields = ('id', 'tweet', 'created_at')
