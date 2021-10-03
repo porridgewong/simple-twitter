@@ -7,6 +7,7 @@ from likes.models import Like
 from newsfeeds.models import Newsfeed
 from rest_framework.test import APIClient
 from tweets.models import Tweet
+from util.redis_client import RedisClient
 
 
 class TwitterTestCase(TestCase):
@@ -50,6 +51,7 @@ class TwitterTestCase(TestCase):
 
     def clear_cache(self):
         caches['testing'].clear()
+        RedisClient.clear()
 
 
     @property
