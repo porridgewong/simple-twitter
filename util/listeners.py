@@ -9,3 +9,11 @@ def push_tweet_to_cache(sender, instance, created, **kwargs):
 
     from tweets.services import TweetService
     TweetService.push_tweet_to_cache(instance)
+
+
+def push_newsfeed_to_cache(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    from newsfeeds.services import NewsfeedService
+    NewsfeedService.push_newsfeed_to_cache(instance)
