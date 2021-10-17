@@ -1,4 +1,5 @@
 from dateutil import parser
+from django.conf import settings
 from rest_framework.pagination import BasePagination
 from rest_framework.response import Response
 
@@ -37,9 +38,6 @@ class EndlessPagination(BasePagination):
         return reverse_ordered_list[index: index + self.page_size]
 
     def paginate_queryset(self, queryset, request, view=None):
-        if type(queryset) == list:
-            return self.paginate_ordered_list(queryset, request)
-
         if 'created_at__gt' in request.query_params:
             created_at__gt = request.query_params['created_at__gt']
             queryset = queryset.filter(created_at__gt=created_at__gt)
@@ -52,6 +50,26 @@ class EndlessPagination(BasePagination):
         queryset = queryset.order_by('-created_at')[:self.page_size + 1]
         self.has_next_page = len(queryset) > self.page_size
         return queryset[:self.page_size]
+
+    def paginate_cached_list(self, cached_list, request):
+        page = self.paginate_ordered_list(cached_list, request)
+
+        # pull down to get the latest data, return directly
+        if 'created_at__gt' in request.query_params:
+            return page
+
+        # pull down to get older data, cached data is enough to cover the requested,
+        # return directly
+        if self.has_next_page:
+            return page
+
+        # pull down to get older data, all the data is in the data though no next page,
+        # return directly
+        if len(cached_list) < settings.REDIS_LIST_LENGTH_LIMIT:
+            return page
+
+        # not all the requested data is in the cache, return None and let the caller to query the DB
+        return None
 
     def get_paginated_response(self, data):
         return Response({
