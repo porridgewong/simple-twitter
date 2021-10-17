@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import caches
 from django.test import TestCase
+from friendships.models import Friendship
 from likes.models import Like
 from newsfeeds.models import Newsfeed
 from rest_framework.test import APIClient
@@ -53,6 +54,8 @@ class TwitterTestCase(TestCase):
         caches['testing'].clear()
         RedisClient.clear()
 
+    def create_friendship(self, from_user, to_user):
+        return Friendship.objects.create(from_user=from_user, to_user=to_user)
 
     @property
     def anonymous_client(self):
