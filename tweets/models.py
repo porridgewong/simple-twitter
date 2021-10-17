@@ -7,6 +7,7 @@ from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
 from util.memcached_helper import MemcachedHelper
 from util.time_helper import utc_now
 from util.listeners import invalidate_object_cache
+from util.listeners import push_tweet_to_cache
 
 
 class Tweet(models.Model):
@@ -65,3 +66,4 @@ class TweetPhoto(models.Model):
 
 
 post_save.connect(invalidate_object_cache, sender=Tweet)
+post_save.connect(push_tweet_to_cache, sender=Tweet)
