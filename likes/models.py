@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
+from likes.listeners import incr_likes_count, decr_likes_count
 from util.memcached_helper import MemcachedHelper
 
 
@@ -26,3 +28,7 @@ class Like(models.Model):
     def __str__(self):
         return u'{} - {} liked {} {}'.format(
             self.created_at, self.user, self.content_type, self.object_id)
+
+
+post_save.connect(incr_likes_count, sender=Like)
+pre_delete.connect(decr_likes_count, sender=Like)

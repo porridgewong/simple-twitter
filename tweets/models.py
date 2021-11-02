@@ -4,16 +4,20 @@ from django.db import models
 from django.db.models.signals import post_save
 from likes.models import Like
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
-from util.memcached_helper import MemcachedHelper
-from util.time_helper import utc_now
 from util.listeners import invalidate_object_cache
 from util.listeners import push_tweet_to_cache
+from util.memcached_helper import MemcachedHelper
+from util.time_helper import utc_now
 
 
 class Tweet(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     content = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # null=True so it won't lock the whole table to populate these fields when migration.
+    likes_count = models.IntegerField(default=0, null=True)
+    comments_count = models.IntegerField(default=0, null=True)
 
     class Meta:
         index_together = (('user', 'created_at'),)
