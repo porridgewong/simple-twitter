@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from kombu import Queue
 from pathlib import Path
 import os
 import sys
@@ -182,6 +183,21 @@ REDIS_LIST_LENGTH_LIMIT = 200 if not TESTING else 20
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/2' if not TESTING else 'redis://127.0.0.1:6379/0'
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_ALWAYS_EAGER = TESTING
+#  Split queues to distinguish main tasks and the small batch task
+CELERY_QUEUES = (
+    Queue('default', routing_key='default'),
+    Queue('newsfeeds', routing_key='newsfeeds'),
+)
+
+# Set different queues to different workers
+# if os.environ.get('WORKER_TYPE') == 'newsfeed':
+#     CELERY_QUEUES = (
+#         Queue('newsfeeds', routing_key='newsfeeds'),
+#     )
+# else:
+#     CELERY_QUEUES = (
+#         Queue('default', routing_key='default'),
+#     )
 
 try:
     from .local_settings import *

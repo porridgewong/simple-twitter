@@ -2,6 +2,7 @@ from django.conf import settings
 from friendships.models import Friendship
 from newsfeeds.models import Newsfeed
 from newsfeeds.services import NewsfeedService
+from newsfeeds.tasks import fanout_newsfeeds_main_task
 from rest_framework.test import APIClient
 from testing.TwitterTestCase import TwitterTestCase
 from util.paginations import EndlessPagination
@@ -212,3 +213,41 @@ class NewsFeedApiTests(TwitterTestCase):
         # cache expired
         self.clear_cache()
         _test_newsfeeds_after_new_feed_pushed()
+
+
+class NewsFeedTaskTests(TwitterTestCase):
+
+    def setUp(self):
+        self.clear_cache()
+        self.linghu = self.create_user('linghu')
+        self.dongxie = self.create_user('dongxie')
+
+    def test_fanout_main_task(self):
+        tweet = self.create_tweet(self.linghu, 'tweet 1')
+        self.create_friendship(self.dongxie, self.linghu)
+        msg = fanout_newsfeeds_main_task(tweet.id, self.linghu.id)
+        self.assertEqual(msg, '1 newsfeeds going to fanout, 1 batches created.')
+        self.assertEqual(1 + 1, Newsfeed.objects.count())
+        cached_list = NewsfeedService.get_cached_newsfeeds(self.linghu.id)
+        self.assertEqual(len(cached_list), 1)
+
+        for i in range(2):
+            user = self.create_user('user{}'.format(i))
+            self.create_friendship(user, self.linghu)
+        tweet = self.create_tweet(self.linghu, 'tweet 2')
+        msg = fanout_newsfeeds_main_task(tweet.id, self.linghu.id)
+        self.assertEqual(msg, '3 newsfeeds going to fanout, 1 batches created.')
+        self.assertEqual(4 + 2, Newsfeed.objects.count())
+        cached_list = NewsfeedService.get_cached_newsfeeds(self.linghu.id)
+        self.assertEqual(len(cached_list), 2)
+
+        user = self.create_user('another user')
+        self.create_friendship(user, self.linghu)
+        tweet = self.create_tweet(self.linghu, 'tweet 3')
+        msg = fanout_newsfeeds_main_task(tweet.id, self.linghu.id)
+        self.assertEqual(msg, '4 newsfeeds going to fanout, 2 batches created.')
+        self.assertEqual(8 + 3, Newsfeed.objects.count())
+        cached_list = NewsfeedService.get_cached_newsfeeds(self.linghu.id)
+        self.assertEqual(len(cached_list), 3)
+        cached_list = NewsfeedService.get_cached_newsfeeds(self.dongxie.id)
+        self.assertEqual(len(cached_list), 3)
