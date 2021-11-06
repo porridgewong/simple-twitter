@@ -34,4 +34,9 @@ class FriendshipService(object):
     def invalidate_following_cache(cls, from_user_id):
         key = FOLLOWINGS_PATTERN.format(user_id=from_user_id)
         cache.delete(key)
+
+    @classmethod
+    def get_follower_ids(cls, user_id):
+        friendships = Friendship.objects.filter(to_user_id=user_id)
+        return [friendship.from_user_id for friendship in friendships]
         
