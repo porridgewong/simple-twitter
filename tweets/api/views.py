@@ -1,4 +1,6 @@
+from django.utils.decorators import method_decorator
 from newsfeeds.services import NewsfeedService
+from ratelimit.decorators import ratelimit
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -21,11 +23,13 @@ class TweetViewSet(viewsets.GenericViewSet,
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='GET', block=True))
     def retrieve(self, request, *args, **kwargs):
         serializer = TweetSerializerForDetail(self.get_object(), context={'request': request})
         return Response(serializer.data)
 
     @required_params(params=['user_id'])
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/s', method='GET', block=True))
     def list(self, request, *args, **kwargs):
         user_id = request.query_params['user_id']
         cached_tweets = TweetService.get_cached_tweets(user_id)
@@ -39,6 +43,8 @@ class TweetViewSet(viewsets.GenericViewSet,
             many=True,)
         return self.get_paginated_response(serializer.data)
 
+    @method_decorator(ratelimit(key='user', rate='1/s', method='POST', block=True))
+    @method_decorator(ratelimit(key='user', rate='5/m', method='POST', block=True))
     def create(self, request, *args, **kwargs):
         serializer = TweetSerializerForCreate(data=request.data, context={'request': request})
         if not serializer.is_valid():

@@ -1,6 +1,8 @@
+from django.utils.decorators import method_decorator
 from inbox.services import NotificationService
 from likes.api.serializers import LikeSerializer, LikeSerializerForCreate, LikeSerializerForCancel
 from likes.models import Like
+from ratelimit.decorators import ratelimit
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +16,7 @@ class LikeViewSet(viewsets.GenericViewSet):
     serializer_class = LikeSerializerForCreate
 
     @required_params(method='POST', params=['content_type', 'object_id'])
+    @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
     def create(self, request, *args, **kwargs):
         serializer = LikeSerializerForCreate(
             data=request.data, context={'request': request})
@@ -34,6 +37,7 @@ class LikeViewSet(viewsets.GenericViewSet):
 
     @action(methods=['POST'], detail=False)
     @required_params(method='POST', params=['content_type', 'object_id'])
+    @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
     def cancel(self, request):
         serializer = LikeSerializerForCancel(
             data=request.data, context={'request': request})
