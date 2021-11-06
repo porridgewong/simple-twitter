@@ -61,6 +61,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'EXCEPTION_HANDLER': 'util.ratelimit.exception_handler',
 }
 
 MIDDLEWARE = [
@@ -121,6 +122,12 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
         'TIMEOUT': 86400,
         'KEY_PREFIX': 'testing',
+    },
+    'ratelimit': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 86400 * 7,
+        'KEY_PREFIX': 'rl',
     },
 }
 
@@ -198,6 +205,11 @@ CELERY_QUEUES = (
 #     CELERY_QUEUES = (
 #         Queue('default', routing_key='default'),
 #     )
+
+# Rate Limiter
+RATELIMIT_USE_CACHE = 'ratelimit'
+RATELIMIT_CACHE_PREFIX = 'rl:'   # avoid key conficts
+RATELIMIT_ENABLE = not TESTING  # turn off when testing
 
 try:
     from .local_settings import *
