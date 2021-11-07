@@ -211,6 +211,9 @@ RATELIMIT_USE_CACHE = 'ratelimit'
 RATELIMIT_CACHE_PREFIX = 'rl:'   # avoid key conficts
 RATELIMIT_ENABLE = not TESTING  # turn off when testing
 
+# HBase
+HBASE_HOST = '127.0.0.1'
+
 try:
     from .local_settings import *
 except:
