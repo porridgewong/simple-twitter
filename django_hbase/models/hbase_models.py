@@ -55,7 +55,7 @@ class HBaseModel:
         return cls(**data)
 
     @classmethod
-    def serialize_row_key(cls, data):
+    def serialize_row_key(cls, data, is_prefix=False):
         """
         serialize dict to bytes (not str)
         {key1: val1} => b"val1"
@@ -69,7 +69,9 @@ class HBaseModel:
                 continue
             value = data.get(key)
             if value is None:
-                raise BadRowKeyError(f"{key} is missing in row key")
+                if not is_prefix:
+                    raise BadRowKeyError(f"{key} is missing in row key")
+                break
             value = cls.serialize_field(field, value)
             if ':' in value:
                 raise BadRowKeyError(f"{key} should not contain ':' in value: {value}")
@@ -180,3 +182,37 @@ class HBaseModel:
             if field.column_family is not None
         }
         conn.create_table(cls.get_table_name(), column_families)
+
+    @classmethod
+    def filter(cls, start=None, stop=None, prefix=None, limit=None, reverse=False):
+        row_start = cls.serialize_row_key_from_tuple(start)
+        row_stop = cls.serialize_row_key_from_tuple(stop)
+        row_prefix = cls.serialize_row_key_from_tuple(prefix)
+
+        table = cls.get_table()
+        rows = table.scan(row_start, row_stop, row_prefix, limit=limit, reverse=reverse)
+
+        instances = list()
+        for row_key, row_data in rows:
+            instance = cls.init_from_row(row_key, row_data)
+            instances.append(instance)
+
+        return instances
+
+    @classmethod
+    def serialize_row_key_from_tuple(cls, row_key_tuple):
+        """
+        Example:
+        row_key_tuple: (1, 2)
+        row_key: (from_user_id, created_at)
+        return: {from_user_id:1, created_at:2}
+        """
+        if row_key_tuple is None:
+            return None
+
+        data = {
+            key: value
+            for key, value in zip(cls.Meta.row_key, row_key_tuple)
+        }
+
+        return cls.serialize_row_key(data, is_prefix=True)
