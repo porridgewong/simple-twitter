@@ -33,27 +33,27 @@ class FriendshipApiTests(TwitterTestCase):
     def test_follow(self):
         url = FOLLOW_URL.format(self.linghu.id)
 
-        # case 1: follow without login
+        # cannot follow without login
         response = self.anonymous_client.post(url)
         self.assertEqual(response.status_code, 403)
-
-        # case 2: use get to follow
+        # fail to follow through get
         response = self.dongxie_client.get(url)
         self.assertEqual(response.status_code, 405)
-
-        # case 3: self-follow
+        # cannot self-follow
         response = self.linghu_client.post(url)
         self.assertEqual(response.status_code, 400)
-
-        # case 4: success
-        count = Friendship.objects.count()
+        # success
         response = self.dongxie_client.post(url)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Friendship.objects.count(), count + 1)
-
-        # case 5: duplicate following
+        # duplicate follow
         response = self.dongxie_client.post(url)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['duplicate'], True)
+        # mutual follow
+        count = Friendship.objects.count()
+        response = self.linghu_client.post(FOLLOW_URL.format(self.dongxie.id))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Friendship.objects.count(), count + 1)
 
     def test_unfollow(self):
         url = UNFOLLOW_URL.format(self.linghu.id)
