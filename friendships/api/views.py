@@ -43,24 +43,22 @@ class FriendshipViewSet(viewsets.GenericViewSet):
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
     def follow(self, request, pk):
-        followed_user = self.get_object()
-        serializer = FriendshipSerializerForCreate(
-            data={
-                'from_user': request.user.id,
-                'to_user': followed_user.id
-            })
-
+        if Friendship.objects.filter(from_user=request.user, to_user=pk).exists():
+            return Response({
+                'success': True,
+                'duplicate': True,
+            }, status=status.HTTP_201_CREATED)
+        serializer = FriendshipSerializerForCreate(data={
+            'from_user_id': request.user.id,
+            'to_user_id': pk,
+        })
         if not serializer.is_valid():
             return Response({
-                    'success': False,
-                    'message': 'please check input',
-                    'errors': serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-
+                'success': False,
+                'errors': serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        return Response({
-                'success': True
-            }, status=status.HTTP_201_CREATED)
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     @method_decorator(ratelimit(key='user', rate='10/s', method='POST', block=True))
