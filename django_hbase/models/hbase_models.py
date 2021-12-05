@@ -216,3 +216,9 @@ class HBaseModel:
         }
 
         return cls.serialize_row_key(data, is_prefix=True)
+
+    @classmethod
+    def delete(cls, **kwargs):
+        row_key = cls.serialize_row_key(kwargs)
+        table = cls.get_table()
+        table.delete(row_key)

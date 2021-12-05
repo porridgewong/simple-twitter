@@ -14,7 +14,7 @@ USER_PROFILE_DETAIL_URL = '/api/profiles/{}/'
 
 class AccountsApiTest(TwitterTestCase):
     def setUp(self):
-        self.clear_cache()
+        super(AccountsApiTest, self).setUp()
         self.client = APIClient()
         self.user = self.createUser(
             username='testuser',

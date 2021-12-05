@@ -4,7 +4,7 @@ from testing.TwitterTestCase import TwitterTestCase
 
 class UserProfileTests(TwitterTestCase):
     def setUp(self):
-        self.clear_cache()
+        super(UserProfileTests, self).setUp()
 
     def test_profile_property(self):
         user1 = self.create_user('user1')
